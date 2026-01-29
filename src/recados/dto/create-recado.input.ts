@@ -6,6 +6,13 @@ import { IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
 export class CreateRecadoInput {
 
 
+  @Field(() => Int, { nullable: true })
+  deId: number;
+
+  @Field(() => Int, { nullable: true })
+  paraId: number;
+
+  
   @Field()
   @IsString()
   @IsNotEmpty()

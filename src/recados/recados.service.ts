@@ -4,39 +4,57 @@ import { UpdateRecadoInput } from './dto/update-recado.input';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Recado } from './entities/recado.entity';
 import { Repository } from 'typeorm';
+import { Pessoa } from 'src/pessoas/entities/pessoa.entity';
 
 @Injectable()
 export class RecadosService {
 
   constructor(
     @InjectRepository(Recado)
-    private readonly recadoRepository: Repository<Recado>
+    private readonly recadoRepository: Repository<Recado>,
+
+    @InjectRepository(Pessoa)
+    private readonly pessoaRepository: Repository<Pessoa>,
   ){}
 
   async create(createRecadoInput: CreateRecadoInput){
-    const recado = await this.recadoRepository.create(createRecadoInput);
-    const recadoSaved = await this.recadoRepository.save(recado)
+    const de = await this.pessoaRepository.findOneBy({ id: createRecadoInput.deId });
+    const para = await this.pessoaRepository.findOneBy({ id: createRecadoInput.paraId });
 
-    if(!recadoSaved){
-      throw new InternalServerErrorException('Problema para criar um recado.')
+    if (!de || !para){
+      throw new NotFoundException('Pessoa não encontrada');
     }
 
-    return recadoSaved;
+    const recado = await this.recadoRepository.create({
+      texto: createRecadoInput.texto,
+      de,
+      para,
+    });
+
+    return await this.recadoRepository.save(recado);
+    
   }
 
   async findAll() {
-    const recados = await this.recadoRepository.find();
+    const recados = await this.recadoRepository.find({
+      relations: {
+        de: true,
+        para: true,
+      }
+    });
     return recados
   }
 
   async findOne(id: number) {
     const recado = await this.recadoRepository.findOne({
-      where:{
-        id,
-      }
+      where:{ id },
+      relations:{
+        de: true,
+        para: true
+      },
     })
     if (!recado){
-      throw new NotFoundException('Problema para criar um recado.')
+      throw new NotFoundException('Recado não encontrado.')
     }
 
     return recado

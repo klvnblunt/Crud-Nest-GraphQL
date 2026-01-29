@@ -1,5 +1,6 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
-import { Column, CreateDateColumn, Entity, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Pessoa } from 'src/pessoas/entities/pessoa.entity';
+import { Column, CreateDateColumn, Entity, UpdateDateColumn, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 
 
 
@@ -27,13 +28,15 @@ export class Recado {
   @Field()
   updateAt: string;
 
-  //@UpdateDateColumn()
-  //@Field()
-  //updateAt: string;
+  @ManyToOne(() => Pessoa, pessoa => pessoa.recadosEnviados)
+  @JoinColumn({ name: 'de'})
+  @Field(() => Pessoa)
+  de: Pessoa;
 
-  //@UpdateDateColumn()
-  //@Field()
-  //updateAt: string;
+  @ManyToOne(() => Pessoa, pessoa => pessoa.recadosEnviados)
+  @JoinColumn({ name: 'para'})
+  @Field(() => Pessoa)
+  para: Pessoa;
 
-  
+
 }
