@@ -1,98 +1,303 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📬 Projeto Recados – NestJS + GraphQL
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Este projeto é um **CRUD de Pessoas e Recados** desenvolvido com **NestJS**, **GraphQL** e **TypeORM**, com o objetivo de estudar e aplicar conceitos de:
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+* GraphQL (Queries, Mutations e Schemas)
+* Relacionamentos entre entidades (OneToMany / ManyToOne)
+* TypeORM com PostgreSQL
+* Arquitetura em camadas (Resolver → Service → Repository)
+* Boas práticas de tipagem e schema-first no GraphQL
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Tecnologias Utilizadas
 
-## Project setup
+* **Node.js**
+* **NestJS**
+* **GraphQL (Code First)**
+* **TypeORM**
+* **PostgreSQL**
+* **Docker / Docker Compose**
+* **TypeScript**
 
-```bash
-$ npm install
+---
+
+## 🧠 Conceito do Sistema
+
+O sistema permite:
+
+* Cadastro de **Pessoas**
+* Envio de **Recados** de uma pessoa para outra
+* Consulta de recados enviados e recebidos
+
+📌 Um **Recado** sempre possui:
+
+* Um remetente (`de` → Pessoa)
+* Um destinatário (`para` → Pessoa)
+
+---
+
+## 🗂️ Estrutura do Projeto
+
+```
+src/
+├── pessoas/
+│   ├── dto/
+│   │   └── create-pessoa.input.ts
+│   ├── pessoa.entity.ts
+│   ├── pessoas.resolver.ts
+│   ├── pessoas.service.ts
+│   └── pessoas.module.ts
+│
+├── recados/
+│   ├── dto/
+│   │   └── create-recado.input.ts
+│   ├── recado.entity.ts
+│   ├── recados.resolver.ts
+│   ├── recados.service.ts
+│   └── recados.module.ts
+│
+├── app.module.ts
+└── main.ts
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## 🧱 Entidades
 
-# watch mode
-$ npm run start:dev
+### Pessoa
 
-# production mode
-$ npm run start:prod
+* `id`
+* `name`
+* `email`
+* `passwordHash`
+* `recadosEnviados`
+* `recadosRecebidos`
+
+Relacionamentos:
+
+* Uma pessoa pode **enviar vários recados**
+* Uma pessoa pode **receber vários recados**
+
+---
+
+### Recado
+
+* `id`
+* `mensagem`
+* `de` (Pessoa remetente)
+* `para` (Pessoa destinatária)
+
+Relacionamentos:
+
+* Muitos recados → Uma pessoa (remetente)
+* Muitos recados → Uma pessoa (destinatária)
+
+---
+
+## 🔁 Relacionamentos (TypeORM)
+
+```ts
+@ManyToOne(() => Pessoa, pessoa => pessoa.recadosEnviados)
+de: Pessoa;
+
+@ManyToOne(() => Pessoa, pessoa => pessoa.recadosRecebidos)
+para: Pessoa;
 ```
 
-## Run tests
+```ts
+@OneToMany(() => Recado, recado => recado.de)
+recadosEnviados: Recado[];
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+@OneToMany(() => Recado, recado => recado.para)
+recadosRecebidos: Recado[];
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## ✍️ Inputs GraphQL
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Criar Pessoa
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```graphql
+input CreatePessoaInput {
+  name: String!
+  email: String!
+  password: String!
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+### Criar Recado
 
-Check out a few resources that may come in handy when working with NestJS:
+📌 **Relacionamentos são criados passando apenas os IDs**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```graphql
+input CreateRecadoInput {
+  deId: Int!
+  paraId: Int!
+  mensagem: String!
+}
+```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🔥 Exemplos de Mutations
 
-## Stay in touch
+### Criar Pessoa
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```graphql
+mutation {
+  createPessoa(createPessoaInput: {
+    name: "João",
+    email: "joao@email.com",
+    password: "123456"
+  }) {
+    id
+    name
+    email
+  }
+}
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Criar Recado
+
+```graphql
+mutation {
+  createRecado(input: {
+    deId: 1,
+    paraId: 2,
+    mensagem: "Olá, tudo bem?"
+  }) {
+    id
+    mensagem
+    de { name }
+    para { name }
+  }
+}
+```
+
+---
+
+## 🔎 Exemplos de Queries
+
+### Listar Pessoas
+
+```graphql
+query {
+  pessoas {
+    id
+    name
+    recadosEnviados {
+      mensagem
+    }
+  }
+}
+```
+
+---
+
+### Listar Recados
+
+```graphql
+query {
+  recados {
+    id
+    mensagem
+    de { name }
+    para { name }
+  }
+}
+```
+
+---
+
+## ⚠️ Erros Comuns Tratados no Projeto
+
+* `Cannot return null for non-nullable field`
+* `Undefined type error` no GraphQL
+* Problemas de injeção de repositório
+* Uso incorreto do `findOne` (TypeORM 0.3+)
+
+---
+
+## ▶️ Como Executar o Projeto
+
+### 1️⃣ Subir o banco com Docker
+
+```bash
+docker-compose up -d
+```
+
+### 2️⃣ Instalar dependências
+
+```bash
+npm install
+```
+
+### 3️⃣ Rodar a aplicação
+
+```bash
+npm run start:dev
+```
+
+## 🧪 Testes com GraphQL (Postman)
+
+Devido a problemas com o GraphQL Playground durante o desenvolvimento, **todas as Queries e Mutations deste projeto foram testadas utilizando o Postman**.
+
+### 🔧 Configuração no Postman
+
+* Método: **POST**
+* URL:
+
+```
+http://localhost:3000/graphql
+```
+
+* Headers:
+
+```
+Content-Type: application/json
+```
+
+* Body → **raw → JSON**
+
+```json
+{
+  "query": "mutation { createPessoa(createPessoaInput: { name: \"João\", email: \"joao@email.com\", password: \"123456\" }) { id name email } }"
+}
+```
+
+📌 O Postman permite executar normalmente:
+
+* Queries
+* Mutations
+* Inputs complexos
+* Relacionamentos entre entidades
+
+Sendo uma alternativa estável ao Playground para testes GraphQL.
+
+```
+
+---
+
+## 📚 Aprendizados Principais
+
+- GraphQL exige **tipagem explícita**
+- Mutations que retornam objetos precisam de **selection set**
+- Relacionamentos são resolvidos no **service**, não no input
+- Sempre retornar o resultado do `save()` no TypeORM
+
+---
+
+## 👨‍💻 Autor
+
+**Jonas Kelvin**
+
+Projeto desenvolvido para fins de estudo e prática com **NestJS + GraphQL** 🚀
+
+```
+
